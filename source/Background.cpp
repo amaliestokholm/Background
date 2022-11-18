@@ -152,10 +152,9 @@ int main(int argc, char *argv[])
     File::openInputFile(inputFile, inputFileName);
     File::sniffFile(inputFile, Ndimensions, Ncols);
     
-    if (Ncols != 2)
+    if (Ncols != 3 && Ncols != 2)
     {
         cerr << " Wrong number of input prior boundaries." << endl;
-        cerr << " Two boundaries are required for uniform priors." << endl;
         exit(EXIT_FAILURE);
     }
     else
@@ -169,18 +168,82 @@ int main(int argc, char *argv[])
     ArrayXXd hyperParameters;
     hyperParameters = File::arrayXXdFromFile(inputFile, Ndimensions, Ncols);
     inputFile.close(); 
-    ArrayXd hyperParametersMinima = hyperParameters.col(0);
-    ArrayXd hyperParametersMaxima = hyperParameters.col(1);
+    ArrayXd hyperParametersLeft = hyperParameters.col(0);
+    ArrayXd hyperParametersRight = hyperParameters.col(1);
+    ArrayXd hyperParametersFlag;
+    if (Ncols == 3){
+    hyperParametersFlag = hyperParameters.col(2);
+    }
 
-    // Uniform Prior
-    int NpriorTypes = 1;                                    // Total number of prior types included in the computation
+    // Mixed Prior
+    //
+    int thenormal = -1;
+    for (int i =0; i < hyperParametersFlag.size();i++){
+	    if (hyperParametersFlag[i] == 1){
+		    thenormal = i;
+		    break;
+	    }
+    }
+    if (thenormal == -1 && Ncols == 3){
+	    cerr << "Did not find any row with Gaussian prior" << endl;
+	    exit(EXIT_FAILURE);
+    }
+    int s1;
+    int s2;
+    int s3;
+    if (Ncols == 3){
+	    s1 = thenormal;
+	    s2 = 1;
+	    s3 = hyperParametersFlag.size()-s1-s2;
+    }
+    else {
+	    s1 = hyperParametersLeft.size();
+	    s2 = s3 = 0;
+    }
+    ArrayXd uniform1minima(s1);
+    ArrayXd uniform1maxima(s1);
+    ArrayXd normalmean(s2);
+    ArrayXd normalstd(s2);
+    ArrayXd uniform2minima(s3);
+    ArrayXd uniform2maxima(s3);
+
+    for (int i =0; i < hyperParametersFlag.size();i++){
+	    if (i < s1){
+		    uniform1minima[i] = hyperParametersLeft[i];
+		    uniform1maxima[i] = hyperParametersRight[i];
+	    }
+	    else if (i == s1){
+		    normalmean[0] = hyperParametersLeft[i];
+		    normalstd[0] = hyperParametersRight[i];
+	    }
+	    else{
+		    uniform2minima[i-s1-s2] = hyperParametersLeft[i];
+		    uniform2maxima[i-s1-s2] = hyperParametersRight[i];
+	    }
+    }
+
+    int NpriorTypes;
+    if (Ncols == 2){
+	    NpriorTypes = 1;
+    }
+    else {
+	   NpriorTypes = 3;
+    }
+
     vector<Prior*> ptrPriors(NpriorTypes);
     
-    UniformPrior uniformPrior(hyperParametersMinima, hyperParametersMaxima);
-    ptrPriors[0] = &uniformPrior;
+    UniformPrior uniformPrior1(uniform1minima, uniform1maxima);
+    NormalPrior normalPrior1(normalmean, normalstd);
+    UniformPrior uniformPrior2(uniform2minima, uniform2maxima);
 
-    string fullPathHyperParameters = outputPathPrefix + "hyperParametersUniform.txt";
-    uniformPrior.writeHyperParametersToFile(fullPathHyperParameters);
+    ptrPriors[0] = &uniformPrior1;
+    if (Ncols == 3){
+    ptrPriors[1] = &normalPrior1;
+    ptrPriors[2] = &uniformPrior2;
+    }
+
+    // string fullPathHyperParameters = outputPathPrefix + "hyperParametersUniform.txt";
+    // uniformPrior.writeHyperParametersToFile(fullPathHyperParameters);
 
 
     // -------------------------------------------------------------------
