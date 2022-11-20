@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
     ArrayXd uniform2minima(s3);
     ArrayXd uniform2maxima(s3);
 
-    for (int i =0; i < hyperParametersFlag.size();i++){
+    for (int i =0; i < hyperParametersLeft.size();i++){
 	    if (i < s1){
 		    uniform1minima[i] = hyperParametersLeft[i];
 		    uniform1maxima[i] = hyperParametersRight[i];
