@@ -120,3 +120,32 @@ void BackgroundModel::readNyquistFrequencyFromFile(const string inputFileName)
 
     inputFile.close();
 }
+
+
+
+// BackgroundModel::writeHyperParametersToFile()
+//
+// PURPOSE:
+//      Store prior hyper parameters in an output ASCII file.
+//
+// INPUT:
+//      fullPath:     a string containing the full filename for the output ASCII file
+//
+// OUTPUT:
+//      void
+//
+
+void BackgroundModel::writeHyperParametersToFile(string fullPath)
+{
+    ofstream outputFile;
+    File::openOutputFile(outputFile, fullPath);
+    outputFile << "# Hyper parameters used for setting up priors." << endl;
+    outputFile << "# Each line corresponds to a different free parameter (coordinate)." << endl;
+    outputFile << "# Column #1: Left prior boundary parameter" << endl;
+    outputFile << "# Column #2: Right prior boundary parameter" << endl;
+    outputFile << "# Column #3: Type of prior" << endl;
+
+    // File::threeArrayXdToFile(outputFile, left, right, priorcases);
+    outputFile.close();
+}
+

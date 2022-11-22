@@ -28,6 +28,8 @@ class BackgroundModel : public Model
         ArrayXd getResponseFunction();
         double getNyquistFrequency();
 
+	void writeHyperParametersToFile(string fullPath);
+
         void readNyquistFrequencyFromFile(const string inputFileName);
         virtual void predict(RefArrayXd predictions, RefArrayXd const modelParameters) = 0;
 
